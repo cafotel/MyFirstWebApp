@@ -78,6 +78,7 @@ var Control = React.createClass({
             success: function (data) {
                 console.log("Control - success");
                 this.setState({ values: data });
+                console.log(this.state.values);
             }.bind(this),
             error: function (xhr, status, err) {
                 console.log("Control - ERROR");
@@ -92,7 +93,7 @@ var Control = React.createClass({
 
         switch (this.props.showAs) {
             case "InputField":
-                configControl = <NumberInput key={this.props.control} values={this.state.values} control={this.props.control} /> ;
+                configControl = <NumberInput key={this.props.control+"Input"} values={this.state.values} control={this.props.control} /> ;
                 break;
             case "DropDown":
                 configControl = <DropDown key={this.props.control + "_DD"} values={this.state.values} control={this.props.control } />;
@@ -114,15 +115,40 @@ var Control = React.createClass({
 var DropDown = React.createClass({
 
     render: function () {
+        // todo: create onclick event so it is possible to change value
+        var selected;
+        var optionStyle = {};
         var nodes = this.props.values.map(function (value, index) {
+            var opts = {};
+            switch ( value.State ) {
+                case 1: //Blocked
+                    opts["disabled"] = "disabled";
+                    optionStyle = {backgroundColor: "grey"};
+                    break;
+                case 2: // Forcable
+                    //opts["disabled"] = "disabled";
+                    optionStyle = { color: "#B0B0B0" };
+                    break;
+                case 3: // SystemAssigned
+                    selected = value.Name;
+                    break;
+                case 4: // UserAssigned
+                    selected = value.Name;
+                    break;
+                default: // Assignable
+                    break;
+            }
             return (
-                <option key={value.FullName+"_"+index}>
+                <option key={value.FullName+"_"+index} 
+                        {...opts} 
+                        state={value.State}
+                        style={optionStyle}>
                     {value.Name}
                 </option>
             );
         });
         return (
-            <select key={this.props.control}>
+            <select key={this.props.control} value={selected}>
                 {nodes}
              </select>
         );

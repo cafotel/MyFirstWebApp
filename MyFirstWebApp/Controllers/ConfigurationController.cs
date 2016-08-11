@@ -52,29 +52,18 @@ namespace MyFirstWebApp.Controllers {
     }
 
     // GET: api/Configuration/5
-    //    public IEnumerable<string> GetVariableValues( int i ) {
+    /* returns the values of a given variable including the value states */
     public IHttpActionResult Get( int id ) {
 
       // select the values of the variable given in the input parameter
       var variable = model.AllVariables[id];
       var values = variable.Values;
-      var vars = values.Select( v => new { v.Name, FullName = v.FullyQualifiedName } ).ToList();
+      var vars = values.Select( v => new { v.Name,
+                                           FullName = v.FullyQualifiedName,
+                                           State = variable.GetState(v) } ).ToList();
 
-      // get ValueStates
-      // TODO: create linq instead
-      List<ValueState> valueStates = new List<ValueState>();
-      foreach ( Value value in values ) {
-        var valState = variable.GetState( value );
-        valueStates.Add(valState);
-      }
+      return Ok( vars );
 
-      var finalValues = new object();
-      if ( vars.Count == valueStates.Count ) {
-        finalValues = vars.Zip( valueStates, ( x, y ) => new { x.FullName, x.Name, State = y } );
-      }
-
-      return Ok( finalValues );
-     // return Ok( values.Select( v => v.Name ) );
 
    }
 
