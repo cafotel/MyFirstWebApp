@@ -49,9 +49,9 @@
       <HintPath>..\packages\JavaScriptEngineSwitcher.V8.1.5.2\lib\net40\ClearScript.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Configit.Base, Version=4.0.60.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Configit.Base">
       <HintPath>Libs\Configit.Base.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Configit.Calculation, Version=5.8.11.86, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -348,7 +348,7 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Libs\Configit.Base.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Libs\Configit.Calculation.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
