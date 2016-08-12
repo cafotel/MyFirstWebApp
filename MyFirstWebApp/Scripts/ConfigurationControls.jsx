@@ -113,7 +113,9 @@ var Control = React.createClass({
  * Creates a Dropdown with the values given as property values
  */
 var DropDown = React.createClass({
-
+    handleSelect: function () {
+        this.setState( { value: event.target.value } );
+    },
     render: function () {
         // todo: create onclick event so it is possible to change value
         var selected;
@@ -130,19 +132,21 @@ var DropDown = React.createClass({
                     optionStyle = { color: "#B0B0B0" };
                     break;
                 case 3: // SystemAssigned
-                    selected = value.Name;
+                    selected = value.FullName;
                     break;
                 case 4: // UserAssigned
-                    selected = value.Name;
+                    selected = value.FullName;
                     break;
                 default: // Assignable
                     break;
             }
             return (
-                <option key={value.FullName+"_"+index} 
-                        {...opts} 
+                <option value={value.FullName} 
+                        key={value.FullName+"_"+index} 
                         state={value.State}
-                        style={optionStyle}>
+                        style={optionStyle}
+                        {...opts} 
+                        onChange={this.handleSelect}>
                     {value.Name}
                 </option>
             );
