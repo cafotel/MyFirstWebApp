@@ -20,61 +20,71 @@ using Newtonsoft.Json.Linq;
 
 namespace MyFirstWebApp.Controllers {
 
-  public class ConfigVars {
+  public class ConfigVariables {
 
-    public ConfigVars( int index, string name, string showas ) {
+    public ConfigVariables( int index, string name, string showas, List<ConfigValues> values  ) {
       Index = index;
       Name = name;
       ShowAs = showas;
+      ConfigValues = values;
     }
     public int Index { get; set; }
     public string Name { get; set; }
     public string ShowAs { get; set; }
+    public List<ConfigValues> ConfigValues { get; set; }
+  }
+
+  public class ConfigValues {
+    public ConfigValues(string name, string fullName, string state) {
+      Name = name;
+      FullName = fullName;
+      State = state;
+    }
+
+    public string Name { get; set; }
+    public string FullName { get; set; }
+    public string State { get; set; }
   }
 
   public class ConfigurationController: ApiController {
-
-    private ProductModel model;
+    
+    private readonly ProductModel _model;
 
     public ConfigurationController() {
       string path = ConfigurationManager.AppSettings["vtzPath"];
-      model = ProductModel.CreateFromVT( path );
+      _model = ProductModel.CreateFromVT( path );
     }
 
-    public IEnumerable<ConfigVars> Get() {
-      var variables = model.AllVariables;
+    public IEnumerable<ConfigVariables> Get() {
+      var variables = _model.AllVariables;
 
-      // TODO: rewrite as anonymous object
-      var vars = variables.Select( i => new ConfigVars( i.Index, i.Name, i.ShowAs ) );
-      // TODO: add values and valueStates 
+      var returnVariables = variables.Select( v => new ConfigVariables(
+                                                v.Index,
+                                                v.Name,
+                                                v.ShowAs,
+                                                v.Values.Select( x => new ConfigValues(
+                                                                    x.Name,
+                                                                    x.FullyQualifiedName,
+                                                                    v.GetState( x ).ToString()
+                                                                  ) ).ToList()
+                                              ) ).ToList();
 
-      return vars;
+      return returnVariables;
     }
 
     // GET: api/Configuration/5
-    //    public IEnumerable<string> GetVariableValues( int i ) {
+    /* returns the values of a given variable including the value states */
     public IHttpActionResult Get( int id ) {
 
       // select the values of the variable given in the input parameter
-      var variable = model.AllVariables[id];
+      var variable = _model.AllVariables[id];
       var values = variable.Values;
-      var vars = values.Select( v => new { v.Name, FullName = v.FullyQualifiedName } ).ToList();
+      var vars = values.Select( v => new { v.Name,
+                                           FullName = v.FullyQualifiedName,
+                                           State = variable.GetState(v) } ).ToList();
 
-      // get ValueStates
-      // TODO: create linq instead
-      List<ValueState> valueStates = new List<ValueState>();
-      foreach ( Value value in values ) {
-        var valState = variable.GetState( value );
-        valueStates.Add(valState);
-      }
+      return Ok( vars );
 
-      var finalValues = new object();
-      if ( vars.Count == valueStates.Count ) {
-        finalValues = vars.Zip( valueStates, ( x, y ) => new { x.FullName, x.Name, State = y } );
-      }
-
-      return Ok( finalValues );
-     // return Ok( values.Select( v => v.Name ) );
 
    }
 
