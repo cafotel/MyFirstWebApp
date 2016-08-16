@@ -98,20 +98,22 @@ var Control = React.createClass({
 /**
  * Creates a Dropdown with the values given as property values
  */
-var DropDown = React.createClass({
-    handleSelect: function () {
-        this.setState( { value: event.target.value } );
+var DropDown = React.createClass( {
+    getInitialState: function() {
+    return {
+        select: "None"
+        }
+    },
+    handleSelect: function (event) {
+        console.log("handle select");
+        this.setState({ select: event.target.value });
+        //TODO: send postback to server
     },
     render: function () {
-        // todo: create onclick event so it is possible to change value
-        var selected = "None";
+        var selected = this.state.select;
         var optionStyle = {};
-        console.log("DropDown - props");
-        console.log(this.props);
         var nodes = this.props.values.map(function (value, index) {
             var opts = {};
-            console.log("Dropdown>Render - value");
-            console.log(value);
             switch ( value.State ) {
                 case "Blocked": //Blocked
                     opts["disabled"] = "disabled";
@@ -124,13 +126,12 @@ var DropDown = React.createClass({
                 case "SystemAssigned": // SystemAssigned
                     selected = value.FullName;
                     break;
-                case "UserAsssigned": // UserAssigned
+                case "UserAssigned": // UserAssigned
                     selected = value.FullName;
                     break;
                 default: // Assignable
                     break;
             }
-
             return (
                 <option value={value.FullName} 
                         key={value.FullName+"_"+index} 
@@ -143,7 +144,7 @@ var DropDown = React.createClass({
             );
         });
         return (
-            <select key={this.props.control} defaultValue={selected} onChange={this.handleSelect} >
+            <select key={this.props.control} defaultValue={selected}  onChange={this.handleSelect} >
                 <option value="None" key="None" state="None" disabled>Make your choice...</option>
                 {nodes}
              </select>
