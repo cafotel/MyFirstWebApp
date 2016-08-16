@@ -39,13 +39,17 @@ var ControlBox = React.createClass({
 var ControlList = React.createClass({
 
     render: function () {
-          var nodes = this.props.data.map(function (control) {
+        var nodes = this.props.data.map(function (control) {
                 return (
                 <div key={control.Name+"Div"}>
                     <span key={control.Name}>
                         {control.Name}:
                     </span>
-                    <Control key={control.Name+"Values"} index={control.Index} showAs={control.ShowAs} control={control.Name} />
+                    <Control key={control.Name+"Values"} 
+                             data={control.ConfigValues} 
+                             index={control.Index} 
+                             showAs={control.ShowAs} 
+                             control={control.Name} />
                 </div>
             );
         });
@@ -60,31 +64,14 @@ var ControlList = React.createClass({
 /**
  * Control element 
  * Retrieves the value(s) of the control and chooses the right html input element based on showAs property
+ * Properties:
+ * - data : values for the control
+ * - index : index of the control in the model
+ * - showAs : type of element to show the control as
+ * - control : name of control
  * /
  */
 var Control = React.createClass({
-
-    getInitialState: function () {
-        return { values: [] };
-    },
-
-    componentDidMount: function () {
-        var url = apiUrl + "/" + this.props.index;
-        $.ajax({
-            url: apiUrl + "/" + this.props.index,
-            dataType: "json",
-            contentType: "application/json",
-            cache: false,
-            success: function (data) {
-                console.log("Control - success");
-                this.setState({ values: data });
-            }.bind(this),
-            error: function (xhr, status, err) {
-                console.log("Control - ERROR");
-                console.error(apiUrl, status, err.toString());
-            }.bind(this)
-        });
-    },
 
     render: function () {
 
@@ -92,10 +79,10 @@ var Control = React.createClass({
 
         switch (this.props.showAs) {
             case "InputField":
-                configControl = <NumberInput key={this.props.control} values={this.state.values} control={this.props.control} /> ;
+                configControl = <NumberInput key={this.props.control+"Input"} values={this.props.data} control={this.props.control} /> ;
                 break;
             case "DropDown":
-                configControl = <DropDown key={this.props.control + "_DD"} values={this.state.values} control={this.props.control } />;
+                configControl = <DropDown key={this.props.control + "_DD"} values={this.props.data} control={this.props.control } />;
                 break;
             default:
                 // TODO: Define default configuration control
@@ -111,18 +98,54 @@ var Control = React.createClass({
 /**
  * Creates a Dropdown with the values given as property values
  */
-var DropDown = React.createClass({
-
+var DropDown = React.createClass( {
+    getInitialState: function() {
+    return {
+        select: "None"
+        }
+    },
+    handleSelect: function (event) {
+        console.log("handle select");
+        this.setState({ select: event.target.value });
+        //TODO: send postback to server
+    },
     render: function () {
+        var selected = this.state.select;
+        var optionStyle = {};
         var nodes = this.props.values.map(function (value, index) {
+            var opts = {};
+            switch ( value.State ) {
+                case "Blocked": //Blocked
+                    opts["disabled"] = "disabled";
+                    optionStyle = {backgroundColor: "B1B1B1"};
+                    break;
+                case "Forcable": // Forcable
+                    //opts["disabled"] = "disabled";
+                    optionStyle = { color: "#B0B0B0" };
+                    break;
+                case "SystemAssigned": // SystemAssigned
+                    selected = value.FullName;
+                    break;
+                case "UserAssigned": // UserAssigned
+                    selected = value.FullName;
+                    break;
+                default: // Assignable
+                    break;
+            }
             return (
-                <option key={value.FullName+"_"+index}>
+                <option value={value.FullName} 
+                        key={value.FullName+"_"+index} 
+                        state={value.State}
+                        style={optionStyle}
+                        {...opts} 
+                        >
                     {value.Name}
                 </option>
             );
         });
         return (
-            <select key={this.props.control}>
+            <select key={this.props.control} defaultValue={selected}  onChange={this.handleSelect} >
+                <option value="None" key="None" state="None" disabled>Make your choice...</option>
                 {nodes}
              </select>
         );
