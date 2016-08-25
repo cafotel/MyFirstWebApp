@@ -23,35 +23,6 @@ using Newtonsoft.Json.Linq;
 
 namespace MyFirstWebApp.Controllers {
 
-  public class ConfigVariable {
-
-    public ConfigVariable( Guid id, int index,  string name, string showas, List<ConfigValue> values  ) {
-      Id = id;
-      Index = index;
-      Name = name;
-      ShowAs = showas;
-      ConfigValues = values;
-    }
-    public Guid Id { get; set; }
-    public int Index { get; set; }
-    public string Name { get; set; }
-    public string ShowAs { get; set; }
-    public List<ConfigValue> ConfigValues { get; set; }
-  }
-
-  public class ConfigValue {
-    public ConfigValue(Guid id, string name, string fullName, string state) {
-      Id = id;
-      Name = name;
-      FullName = fullName;
-      State = state;
-    }
-
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public string FullName { get; set; }
-    public string State { get; set; }
-  }
 
   public class ConfigurationController: ApiController {
     
@@ -62,18 +33,18 @@ namespace MyFirstWebApp.Controllers {
       _model = ProductModel.CreateFromVT( path );
     }
 
-    // TODO: maybe change this into an IHTTPActionResult, so as to avoid the ConfigVariable and ConfigValue classes
+    // TODO: maybe change this into an IHTTPActionResult, so as to avoid the ConfigVariable and ConfigValue classes - No rename to *Wrapper and use Wrappers for all return values
     [HttpGet]
-    public IEnumerable<ConfigVariable> Get() {
+    public IEnumerable<VariableWrapper> Get() {
       var variables = _model.AllVariables;
 
-      var returnVariables = variables.Select( v => new ConfigVariable(
+      var returnVariables = variables.Select( v => new VariableWrapper(
 
                                                 v.ElementUuid,
                                                 v.Index,
                                                 v.Name,
                                                 v.ShowAs,
-                                                v.Values.Select( x => new ConfigValue(
+                                                v.Values.Select( x => new ValueWrapper(
                                                                     x.ElementUuid,
                                                                     x.Name,
                                                                     x.FullyQualifiedName,
@@ -84,27 +55,20 @@ namespace MyFirstWebApp.Controllers {
       return returnVariables;
     }
 
-    // GET: api/Configuration/5
-    /* returns the values of a given variable including the value states */
+    // GET: api/Configuration/5b738403-030b-42bf-9c3a-98b2d3027f49
+    /* returns the values of a given variable including the value states. Returns null if no variable or values found */
     [HttpGet]
-    public IHttpActionResult GetValues( int id ) {
+    public List<ValueWrapper> GetValues( Guid id ) {
 
-      // avoid out of bounds exception
-      if( id >= _model.AllVariables.Count ) {
-        return NotFound();
-      }
+      var variable = _model?.GetVariableFromUuid( id );
 
-      var variable = _model.AllVariables[id];
-      var values = variable.Values;
-
-      var valueResult = values.Select( v => new {
-                                      Uuid = v.ElementUuid,
+      return variable?.Values?.Select( v => new ValueWrapper(
+                                      v.ElementUuid,
                                       v.Name,
                                       v.FullyQualifiedName,
-                                      State = variable.GetState( v )
-      } ).ToList();
-
-      return Ok( valueResult );
+                                      variable.GetState( v ).ToString()
+      ) ).ToList();
+      
     }
 
     // POST: api/Configuration
@@ -118,8 +82,9 @@ namespace MyFirstWebApp.Controllers {
 
       // apply assigned value to model
       _model.ApplyAssignments(assignments);
+      //_model.ApplyAssignments( assignments, AssignmentApplyMethod.ResetDontApplyDefaults );
+      var undolist = _model.UndoList;
 
-      var result = new object();
       // check the model for conflicts
       if ( !_model.HasConflict ) {
         return Ok( new { HasConflict = _model.HasConflict } );
@@ -143,5 +108,35 @@ namespace MyFirstWebApp.Controllers {
     // DELETE: api/Configuration/5
     public void Delete( int id ) {
     }
+  }
+
+  public class VariableWrapper {
+
+    public VariableWrapper( Guid id, int index, string name, string showas, List<ValueWrapper> values ) {
+      Id = id;
+      Index = index;
+      Name = name;
+      ShowAs = showas;
+      Values = values;
+    }
+    public Guid Id { get; set; }
+    public int Index { get; set; }
+    public string Name { get; set; }
+    public string ShowAs { get; set; }
+    public List<ValueWrapper> Values { get; set; }
+  }
+
+  public class ValueWrapper {
+    public ValueWrapper( Guid id, string name, string fullName, string state ) {
+      Id = id;
+      Name = name;
+      FullName = fullName;
+      State = state;
+    }
+
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public string FullName { get; set; }
+    public string State { get; set; }
   }
 }
