@@ -33,8 +33,53 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Configit.Base">
+      <HintPath>..\MyFirstWebApp\Libs\Configit.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="Configit.Calculation, Version=5.8.11.86, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MyFirstWebApp\Libs\Configit.Calculation.dll</HintPath>
+    </Reference>
+    <Reference Include="Configit.ControlManager, Version=5.8.11.86, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MyFirstWebApp\Libs\Configit.ControlManager.dll</HintPath>
+    </Reference>
+    <Reference Include="Configit.Core.Capabilities, Version=1.1.186.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MyFirstWebApp\Libs\Configit.Core.Capabilities.dll</HintPath>
+    </Reference>
+    <Reference Include="Configit.Core.IO, Version=1.1.186.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MyFirstWebApp\Libs\Configit.Core.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="Configit.Core.Model, Version=1.1.186.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MyFirstWebApp\Libs\Configit.Core.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="Configit.Core.Model.Logic, Version=1.1.186.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MyFirstWebApp\Libs\Configit.Core.Model.Logic.dll</HintPath>
+    </Reference>
+    <Reference Include="Configit.Core.Utils, Version=1.1.186.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MyFirstWebApp\Libs\Configit.Core.Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="Configit.Runtime, Version=5.8.11.86, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MyFirstWebApp\Libs\Configit.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Configit.SAP, Version=5.8.11.86, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MyFirstWebApp\Libs\Configit.SAP.dll</HintPath>
+    </Reference>
+    <Reference Include="Ionic.Zip.Reduced, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\MyFirstWebApp\Libs\Ionic.Zip.Reduced.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
@@ -91,6 +136,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\ConfigurationControllerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Controllers\HomeControllerTest.cs" />
     <Compile Include="Controllers\ValuesControllerTest.cs" />

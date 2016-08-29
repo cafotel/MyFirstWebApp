@@ -31,29 +31,31 @@ namespace MyFirstWebApp.Controllers {
     public ConfigurationController() {
       string path = ConfigurationManager.AppSettings["vtzPath"];
       _model = ProductModel.CreateFromVT( path );
+      //_model.AutoUndo = true;
     }
 
-    // TODO: maybe change this into an IHTTPActionResult, so as to avoid the ConfigVariable and ConfigValue classes - No rename to *Wrapper and use Wrappers for all return values
     [HttpGet]
     public IEnumerable<VariableWrapper> Get() {
       var variables = _model.AllVariables;
 
-      var returnVariables = variables.Select( v => new VariableWrapper(
+      var returnVariables = WrapVariables( variables );
+      //var returnVariables = variables.Select( v => new VariableWrapper(
 
-                                                v.ElementUuid,
-                                                v.Index,
-                                                v.Name,
-                                                v.ShowAs,
-                                                v.Values.Select( x => new ValueWrapper(
-                                                                    x.ElementUuid,
-                                                                    x.Name,
-                                                                    x.FullyQualifiedName,
-                                                                    v.GetState( x ).ToString()
-                                                                  ) ).ToList()
-                                              ) ).ToList();
+      //                                          v.ElementUuid,
+      //                                          v.Index,
+      //                                          v.Name,
+      //                                          v.ShowAs,
+      //                                          v.Values.Select( x => new ValueWrapper(
+      //                                                              x.ElementUuid,
+      //                                                              x.Name,
+      //                                                              x.FullyQualifiedName,
+      //                                                              v.GetState( x ).ToString()
+      //                                                            ) ).ToList()
+      //                                        ) ).ToList();
 
       return returnVariables;
     }
+
 
     // GET: api/Configuration/5b738403-030b-42bf-9c3a-98b2d3027f49
     /* returns the values of a given variable including the value states. Returns null if no variable or values found */
@@ -62,13 +64,9 @@ namespace MyFirstWebApp.Controllers {
 
       var variable = _model?.GetVariableFromUuid( id );
 
-      return variable?.Values?.Select( v => new ValueWrapper(
-                                      v.ElementUuid,
-                                      v.Name,
-                                      v.FullyQualifiedName,
-                                      variable.GetState( v ).ToString()
-      ) ).ToList();
-      
+      return variable?.Values?.Select( v => WrapValue( v , 
+                                                       variable.GetState( v ).ToString() )
+                                     ).ToList();      
     }
 
     // POST: api/Configuration
@@ -81,9 +79,10 @@ namespace MyFirstWebApp.Controllers {
     public IHttpActionResult Put( List<Assignment> assignments, bool force = false ) {
 
       // apply assigned value to model
-      _model.ApplyAssignments(assignments);
+//      _model.ApplyAssignments(assignments);
       //_model.ApplyAssignments( assignments, AssignmentApplyMethod.ResetDontApplyDefaults );
-      var undolist = _model.UndoList;
+      _model.ApplyAssignments( assignments, AssignmentApplyMethod.ResetAndApplyDefaults );
+      //var undolist = _model.UndoList;
 
       // check the model for conflicts
       if ( !_model.HasConflict ) {
@@ -91,6 +90,8 @@ namespace MyFirstWebApp.Controllers {
       }
 
       var conflict = _model.GetConflict();
+      var conflictAssign = conflict.ConflictingAssignments;
+      //conflictAssign.
       return Ok( new {
         HasConflict = _model.HasConflict,
         HeaderText = conflict.HeaderText,
@@ -101,14 +102,58 @@ namespace MyFirstWebApp.Controllers {
 
     }
 
-    public IHttpActionResult ForceAssignment() {
+    public IHttpActionResult ForceAssignment(bool force) {
+  /*    if ( !force ) {
+        _model.Undo();
+      }
+      */
       return Ok(Get());
     }
 
     // DELETE: api/Configuration/5
     public void Delete( int id ) {
     }
+
+    #region Private wrapper methods
+    /* Takes a VariableCollection and wraps it in the output VariableWrapper IEnumerable */
+    private IEnumerable<VariableWrapper> WrapVariables( VariableCollection variables ) {
+
+      var returnVariables = variables.Select( v => new VariableWrapper(
+
+                                                v.ElementUuid,
+                                                v.Index,
+                                                v.Name,
+                                                v.ShowAs,
+                                                v.Values.Select( x =>  WrapValue( x,
+                                                                                  v.GetState( x ).ToString() ) ).ToList()
+                                              ) ).ToList();
+
+      return returnVariables;
+    }
+
+    /* Takes a Variable / ValueCollection and wraps it in the output ValueWrapper IEnumerable */
+    private ValueWrapper WrapValue(Value value, string state) {
+
+      return new ValueWrapper( value.ElementUuid,
+                               value.Name,
+                               value.FullyQualifiedName, 
+                               state
+                               );
+    }
+
+    private ConflictWrapper WrapConflict(Conflict conflict, bool hasConflict) {
+
+      return new ConflictWrapper( hasConflict,
+                                  conflict.HeaderText,
+                                  conflict.Message,
+                                  conflict.ForceText,
+                                  conflict.UndoText
+                                  );
+    }
+    #endregion
   }
+
+  #region Wrapper object classes
 
   public class VariableWrapper {
 
@@ -119,6 +164,7 @@ namespace MyFirstWebApp.Controllers {
       ShowAs = showas;
       Values = values;
     }
+
     public Guid Id { get; set; }
     public int Index { get; set; }
     public string Name { get; set; }
@@ -127,6 +173,7 @@ namespace MyFirstWebApp.Controllers {
   }
 
   public class ValueWrapper {
+
     public ValueWrapper( Guid id, string name, string fullName, string state ) {
       Id = id;
       Name = name;
@@ -139,4 +186,23 @@ namespace MyFirstWebApp.Controllers {
     public string FullName { get; set; }
     public string State { get; set; }
   }
+
+  public class ConflictWrapper {
+
+    public ConflictWrapper(bool hasConflict, string headerText, string message, string forceText, string undoText) {
+      HasConflict = hasConflict;
+      HeaderText = headerText;
+      Message = message;
+      ForceText = forceText;
+      UndoText = undoText;
+    }
+
+    public bool HasConflict { get; set; }
+    public string HeaderText { get; set; }
+    public string Message { get; set; }
+    public string ForceText { get; set; }
+    public string UndoText { get; set; }
+  }
+
+  #endregion
 }
